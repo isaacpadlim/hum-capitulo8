@@ -1,0 +1,417 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Honor vs Supervivencia</title>
+  <style>
+    :root{
+      --bg1:#070b18;
+      --bg2:#0b1633;
+      --card:rgba(255,255,255,.06);
+      --border:rgba(255,255,255,.12);
+      --text:#eef3ff;
+      --muted:#a9b9dc;
+      --accent:#7aa2ff;
+      --good:#46d39a;
+      --bad:#ff6b6b;
+      --shadow:0 18px 55px rgba(0,0,0,.45);
+    }
+    *{box-sizing:border-box;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,Arial,sans-serif}
+    body{
+      margin:0;
+      color:var(--text);
+      background:
+        radial-gradient(1200px 800px at 20% 10%, #1a2d63 0%, var(--bg2) 50%, var(--bg1) 100%),
+        radial-gradient(900px 700px at 80% 30%, rgba(122,162,255,.20) 0%, rgba(0,0,0,0) 60%);
+      min-height:100vh;
+    }
+
+    /* Layout */
+    .wrap{max-width:980px;margin:0 auto;padding:28px}
+    .card{
+      background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
+      border:1px solid var(--border);
+      border-radius:18px;
+      padding:24px;
+      box-shadow:var(--shadow);
+      backdrop-filter: blur(8px);
+    }
+    .hidden{display:none}
+
+    /* Header / Title */
+    .heroTitle{
+      margin:0;
+      font-size:42px;
+      letter-spacing:.5px;
+      font-weight:950;
+    }
+    .heroSub{
+      margin:10px 0 0;
+      color:var(--muted);
+      line-height:1.45;
+      font-size:15px;
+    }
+
+    /* Badges */
+    .row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+    .badge{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:8px 12px;border:1px solid var(--border);
+      border-radius:999px;color:var(--muted);font-weight:750;font-size:13px;
+      background:rgba(255,255,255,.05);
+    }
+
+    /* Buttons */
+    .btn{
+      border:1px solid var(--border);
+      background:rgba(255,255,255,.07);
+      color:var(--text);
+      padding:12px 16px;
+      border-radius:14px;
+      cursor:pointer;
+      font-weight:800;
+      transition:transform .05s ease, background .15s ease, border-color .15s ease;
+      user-select:none;
+    }
+    .btn:hover{background:rgba(255,255,255,.12)}
+    .btn:active{transform:translateY(1px)}
+    .btn:disabled{opacity:.55;cursor:not-allowed}
+    .btn.primary{background:rgba(122,162,255,.18);border-color:rgba(122,162,255,.40)}
+    .btn.true{background:rgba(70,211,154,.14);border-color:rgba(70,211,154,.40)}
+    .btn.false{background:rgba(255,107,107,.14);border-color:rgba(255,107,107,.40)}
+
+    /* Progress */
+    .progress{
+      height:10px;border-radius:999px;
+      background:rgba(255,255,255,.08);
+      overflow:hidden;border:1px solid var(--border);
+      width:100%;
+      margin-top:10px
+    }
+    .bar{height:100%;width:0;background:linear-gradient(90deg,var(--accent),#9ae6ff)}
+    .small{font-size:13px;color:var(--muted)}
+
+    /* GAME layout: keep header but center content */
+    #screenGame{
+      min-height:calc(100vh - 56px); /* helps centering */
+    }
+
+    .gameHeader{
+      display:flex;
+      justify-content:space-between;
+      gap:14px;
+      flex-wrap:wrap;
+      align-items:flex-start;
+    }
+
+    .centerStage{
+      min-height:52vh;
+      display:flex;
+      flex-direction:column;
+      justify-content:center; /* CENTRA vertical */
+      align-items:center;
+      text-align:center;
+      padding:10px 6px 0;
+    }
+
+    .statement{
+      margin:12px 0 14px;
+      font-size:30px;
+      line-height:1.18;
+      font-weight:950;
+      max-width:780px;
+    }
+
+    .answerRow{
+      display:flex;
+      gap:12px;
+      justify-content:center;
+      flex-wrap:wrap;
+      margin-top:4px;
+    }
+
+    .feedback{
+      margin-top:14px;
+      padding:12px 14px;
+      border-radius:16px;
+      border:1px solid var(--border);
+      background:rgba(255,255,255,.06);
+      display:none;
+      max-width:780px;
+    }
+    .feedback.good{border-color:rgba(70,211,154,.45);background:rgba(70,211,154,.12)}
+    .feedback.bad{border-color:rgba(255,107,107,.45);background:rgba(255,107,107,.12)}
+    .feedbackTitle{font-weight:900;margin-bottom:6px}
+    .footerRow{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-top:18px;
+      align-items:center;
+      border-top:1px solid rgba(255,255,255,.10);
+      padding-top:14px;
+    }
+
+    /* End screen */
+    .center{text-align:center}
+    .bigScore{font-size:44px;font-weight:950;margin:8px 0 6px}
+    .tip{font-size:13px;color:var(--muted);margin-top:10px}
+
+    @media (max-width:720px){
+      .heroTitle{font-size:34px}
+      .statement{font-size:24px}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+
+    <!-- START -->
+    <div class="card" id="screenStart">
+      <h1 class="heroTitle">HONOR VS SUPERVIVENCIA</h1>
+      <p class="heroSub">
+        Juego rápido (5 min) sobre dignidad, moral y decisiones políticas (Capítulo VIII).
+        <br>Marca <b>VERDADERO</b> o <b>FALSO</b> y mira la explicación.
+      </p>
+
+      <div class="row" style="margin-top:16px">
+        <button class="btn primary" id="btnStart">Empezar</button>
+        <span class="badge">6 preguntas • 1 punto por acierto</span>
+        <span class="badge">Teclas: <span class="small"><b>V</b> / <b>F</b> • Enter</span></span>
+      </div>
+
+      <p class="tip">Tip para decir en clase: “Es V/F y después vemos una explicación corta.”</p>
+    </div>
+
+    <!-- GAME -->
+    <div class="card hidden" id="screenGame">
+      <div class="gameHeader">
+        <div>
+          <div class="badge" id="qCounter">Pregunta 1/6</div>
+          <div class="badge">Puntaje: <span id="score">0</span></div>
+        </div>
+
+        <div style="min-width:260px;flex:1">
+          <div class="progress" aria-label="Progreso">
+            <div class="bar" id="bar"></div>
+          </div>
+          <div class="small" style="margin-top:6px" id="progressText">0% completado</div>
+        </div>
+      </div>
+
+      <!-- Centered stage -->
+      <div class="centerStage">
+        <div class="statement" id="statement"></div>
+
+        <div class="answerRow">
+          <button class="btn true" id="btnTrue">VERDADERO</button>
+          <button class="btn false" id="btnFalse">FALSO</button>
+        </div>
+
+        <div class="feedback" id="feedbackBox">
+          <div class="feedbackTitle" id="fbTitle">Resultado</div>
+          <div id="fbText"></div>
+        </div>
+      </div>
+
+      <div class="footerRow">
+        <div class="small">Idea clave: dignidad, humillación y decisiones por el bien común.</div>
+        <button class="btn" id="btnNext" disabled>Siguiente</button>
+      </div>
+    </div>
+
+    <!-- END -->
+    <div class="card hidden center" id="screenEnd">
+      <h1 class="heroTitle" style="font-size:36px">Resultado final</h1>
+      <div class="bigScore">Puntaje: <span id="finalScore">0</span>/6</div>
+      <p class="small" id="finalMsg"></p>
+
+      <div class="row" style="justify-content:center;margin-top:14px">
+        <button class="btn primary" id="btnRetry">Reintentar</button>
+      </div>
+
+      <p class="tip">Si te preguntan “¿qué significa el título?”: es el choque entre orgullo/honor y proteger el futuro del grupo.</p>
+    </div>
+  </div>
+
+  <script>
+    // 6 afirmaciones (cortas) + respuesta + feedback corto
+    const questions = [
+      {
+        text: "En política, a veces importa más salvar al pueblo que verse héroe.",
+        answer: true,
+        ok: "El bien común puede pesar más que el heroísmo individual.",
+        no: "El capítulo insiste en priorizar la supervivencia colectiva."
+      },
+      {
+        text: "La humillación siempre destruye la dignidad, sin excepción.",
+        answer: false,
+        ok: "Puede doler, pero no necesariamente anula el futuro del colectivo.",
+        no: "El texto dice que se puede preservar el futuro común."
+      },
+      {
+        text: "Una promesa personal y un tratado del pueblo son jurídicamente iguales.",
+        answer: false,
+        ok: "Se parecen moralmente, pero jurídicamente no son lo mismo.",
+        no: "El capítulo distingue promesa (personal) vs tratado (institucional)."
+      },
+      {
+        text: "Reconstruir legitimidad puede apoyarse en el derecho, no solo en revancha.",
+        answer: true,
+        ok: "El derecho puede servir como base para reordenar la acción política.",
+        no: "El cierre habla del derecho como base, no solo venganza."
+      },
+      {
+        text: "Disfrazar venganza con “justicia” es una crítica presente en el texto.",
+        answer: true,
+        ok: "Advierte sobre la apariencia de derecho para cubrir intereses.",
+        no: "El capítulo critica la venganza disfrazada de justicia."
+      },
+      {
+        text: "La estrategia política nunca puede servir al bien común.",
+        answer: false,
+        ok: "El texto acepta estrategia, aunque sea incómoda, si protege al grupo.",
+        no: "Se muestra que la política mezcla razón, derecho y estrategia."
+      }
+    ];
+
+    const screenStart = document.getElementById("screenStart");
+    const screenGame  = document.getElementById("screenGame");
+    const screenEnd   = document.getElementById("screenEnd");
+
+    const btnStart = document.getElementById("btnStart");
+    const btnTrue  = document.getElementById("btnTrue");
+    const btnFalse = document.getElementById("btnFalse");
+    const btnNext  = document.getElementById("btnNext");
+    const btnRetry = document.getElementById("btnRetry");
+
+    const statement = document.getElementById("statement");
+    const feedbackBox = document.getElementById("feedbackBox");
+    const fbTitle = document.getElementById("fbTitle");
+    const fbText = document.getElementById("fbText");
+
+    const qCounter = document.getElementById("qCounter");
+    const scoreEl = document.getElementById("score");
+    const bar = document.getElementById("bar");
+    const progressText = document.getElementById("progressText");
+
+    const finalScore = document.getElementById("finalScore");
+    const finalMsg = document.getElementById("finalMsg");
+
+    let idx = 0;
+    let score = 0;
+    let locked = false;
+
+    function showScreen(which){
+      screenStart.classList.add("hidden");
+      screenGame.classList.add("hidden");
+      screenEnd.classList.add("hidden");
+      which.classList.remove("hidden");
+    }
+
+    function updateProgress(){
+      const pct = Math.round((idx / questions.length) * 100);
+      bar.style.width = pct + "%";
+      progressText.textContent = pct + "% completado";
+    }
+
+    function render(){
+      locked = false;
+      btnNext.disabled = true;
+      btnTrue.disabled = false;
+      btnFalse.disabled = false;
+
+      feedbackBox.style.display = "none";
+      feedbackBox.classList.remove("good","bad");
+
+      qCounter.textContent = `Pregunta ${idx+1}/${questions.length}`;
+      statement.textContent = questions[idx].text;
+
+      scoreEl.textContent = score;
+      updateProgress();
+    }
+
+    function answer(userAnswer){
+      if(locked) return;
+      locked = true;
+
+      const q = questions[idx];
+      const correct = (userAnswer === q.answer);
+
+      feedbackBox.classList.remove("good","bad");
+      if(correct){
+        score += 1;
+        fbTitle.textContent = "✅ Correcto";
+        fbText.textContent = q.ok;
+        feedbackBox.classList.add("good");
+      } else {
+        fbTitle.textContent = "❌ Incorrecto";
+        fbText.textContent = q.no;
+        feedbackBox.classList.add("bad");
+      }
+
+      scoreEl.textContent = score;
+
+      feedbackBox.style.display = "block";
+      btnNext.disabled = false;
+
+      btnTrue.disabled = true;
+      btnFalse.disabled = true;
+    }
+
+    function next(){
+      idx += 1;
+      if(idx >= questions.length){
+        finish();
+      } else {
+        render();
+      }
+    }
+
+    function finish(){
+      bar.style.width = "100%";
+      progressText.textContent = "100% completado";
+
+      finalScore.textContent = score;
+
+      let msg = "";
+      if(score <= 2) msg = "Tip: repasa promesa vs tratado y el choque entre honor y bien común.";
+      else if(score <= 4) msg = "Vas bien: ya captaste la tensión moral vs política.";
+      else msg = "Excelente: entendiste cómo se piensa el bien común en decisiones difíciles.";
+      finalMsg.textContent = msg;
+
+      showScreen(screenEnd);
+    }
+
+    function reset(){
+      idx = 0;
+      score = 0;
+      bar.style.width = "0%";
+      progressText.textContent = "0% completado";
+      showScreen(screenGame);
+      render();
+    }
+
+    btnStart.addEventListener("click", () => {
+      showScreen(screenGame);
+      render();
+    });
+
+    btnTrue.addEventListener("click", () => answer(true));
+    btnFalse.addEventListener("click", () => answer(false));
+    btnNext.addEventListener("click", () => next());
+    btnRetry.addEventListener("click", () => reset());
+
+    // Teclas rápidas (útil si proyectas y alguien va en la compu)
+    document.addEventListener("keydown", (e) => {
+      if(screenGame.classList.contains("hidden")) return;
+      const k = e.key.toLowerCase();
+      if(k === "v") answer(true);
+      if(k === "f") answer(false);
+      if(e.key === "Enter" && !btnNext.disabled) next();
+    });
+  </script>
+</body>
+</html>
